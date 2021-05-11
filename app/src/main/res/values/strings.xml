@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Notepad</string>
     <string name="add_note">Add note</string>
+    <string name="hint_title">Title...</string>
+    <string name="hint_content">Content...</string>
+    <string name="button_save">Save</string>
+    <string name="empty_not_saved">Note not saved because it is empty.</string>
+    <string name="not_found_notes">Not found Notes</string>
 </resources>

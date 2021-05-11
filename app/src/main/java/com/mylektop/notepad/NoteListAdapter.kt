@@ -20,15 +20,16 @@ class NoteListAdapter :
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val current = getItem(position)
-
-        holder.bind(current.title)
+        holder.bind(current)
     }
 
     class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val noteItemView: TextView = itemView.findViewById(R.id.textView)
+        private val noteItemViewTitle: TextView = itemView.findViewById(R.id.textViewTitle)
+        private val noteItemViewLastUpdate: TextView = itemView.findViewById(R.id.textViewUpdateAt)
 
-        fun bind(text: String?) {
-            noteItemView.text = text
+        fun bind(note: Note?) {
+            noteItemViewTitle.text = note?.title
+            noteItemViewLastUpdate.text = note?.updateAt
         }
 
         companion object {
