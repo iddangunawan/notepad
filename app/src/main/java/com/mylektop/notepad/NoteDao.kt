@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM note_table ORDER BY update_at ASC")
+    @Query("SELECT * FROM note_table ORDER BY update_at DESC")
     fun getAllOrderByUpdateAt(): Flow<List<Note>>
 
     @Query("SELECT * FROM note_table WHERE id = :id")

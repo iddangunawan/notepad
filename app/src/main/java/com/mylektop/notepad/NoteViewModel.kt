@@ -1,17 +1,33 @@
 package com.mylektop.notepad
 
 import androidx.lifecycle.*
+import com.mylektop.notepad.base.BaseState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Created by iddangunawan on 09/05/21
  */
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
+    val eventGlobalMessage: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val getNoteByIdEvent: MutableLiveData<Note> by lazy {
+        MutableLiveData<Note>()
+    }
+
     val allNotes: LiveData<List<Note>> = repository.allNotes.asLiveData()
 
     fun getNoteById(id: Int) = viewModelScope.launch {
-        repository.getNoteById(id)
+        val response = repository.getNoteById(id)
+        withContext(Dispatchers.IO) {
+            when (response) {
+                is BaseState.SuccessResponse -> getNoteByIdEvent.postValue(response.data)
+                is BaseState.FailedResponse -> eventGlobalMessage.postValue(response.message)
+            }
+        }
     }
 
     fun insert(note: Note) = viewModelScope.launch {
