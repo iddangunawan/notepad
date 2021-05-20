@@ -6,7 +6,8 @@
     <string name="hint_content">Insert content here…</string>
     <string name="btn_save">Save</string>
     <string name="btn_update">Update</string>
-    <string name="btn_cancel">Cancel</string>
-    <string name="empty_not_saved">Note not saved because it is empty.</string>
+    <string name="btn_delete">Delete</string>
     <string name="not_found_notes">Not found Notes</string>
+    <string name="field_cannot_be_blank">%1$s cannot be blank</string>
+    <string name="note_deleted">Note deleted</string>
 </resources>

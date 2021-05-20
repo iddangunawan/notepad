@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(), NoteListAdapter.NoteItemListener {
         val adapter = NoteListAdapter(this)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.setHasFixedSize(true)
 
         noteViewModel.eventGlobalMessage.observe(this) { message ->
             Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
@@ -50,7 +52,7 @@ class MainActivity : AppCompatActivity(), NoteListAdapter.NoteItemListener {
         }
         noteViewModel.getNoteByIdEvent.observe(this) { note ->
             val intent = Intent(this@MainActivity, NewNoteActivity::class.java)
-            intent.putExtra("NOTE", note)
+            intent.putExtra(NewNoteActivity.EXTRA_REPLY_NOTE, note)
             startActivityForResult(intent, editNoteActivityRequestCode)
         }
 
@@ -59,24 +61,44 @@ class MainActivity : AppCompatActivity(), NoteListAdapter.NoteItemListener {
             val intent = Intent(this@MainActivity, NewNoteActivity::class.java)
             startActivityForResult(intent, newNoteActivityRequestCode)
         }
+
+        ItemTouchHelper(object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                noteViewModel.delete(adapter.getNoteAt(viewHolder.adapterPosition))
+                Toast.makeText(this@MainActivity, R.string.note_deleted, Toast.LENGTH_LONG).show()
+            }
+        }).attachToRecyclerView(recyclerView)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        val id = data?.getIntExtra(NewNoteActivity.EXTRA_REPLY_ID, 0) ?: 0
-        val title = data?.getStringExtra(NewNoteActivity.EXTRA_REPLY_TITLE) ?: ""
-        val content = data?.getStringExtra(NewNoteActivity.EXTRA_REPLY_CONTENT) ?: ""
-        val updateAt = data?.getStringExtra(NewNoteActivity.EXTRA_REPLY_UPDATE_AT) ?: ""
-
-        if (requestCode == newNoteActivityRequestCode && resultCode == Activity.RESULT_OK) {
-            val note = Note(id, title, content, updateAt)
-            noteViewModel.insert(note)
-        } else if (requestCode == editNoteActivityRequestCode && resultCode == Activity.RESULT_OK) {
-            val note = Note(id, title, content, updateAt)
-            noteViewModel.update(note)
+        val note = data?.getSerializableExtra(NewNoteActivity.EXTRA_REPLY_NOTE) as Note?
+        if (note != null) {
+            if (requestCode == newNoteActivityRequestCode && resultCode == Activity.RESULT_OK) {
+                noteViewModel.insert(note)
+            } else if (requestCode == editNoteActivityRequestCode && resultCode == Activity.RESULT_OK) {
+                noteViewModel.update(note)
+                if (data?.getStringExtra(NewNoteActivity.EXTRA_REPLY_ACTION) == NewNoteActivity.EXTRA_REPLY_ACTION_DELETE) {
+                    noteViewModel.delete(note)
+                    Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_LONG).show()
+                } else {
+                    println("Info: else action delete")
+                }
+            } else {
+                println("Info: else action")
+            }
         } else {
-            Toast.makeText(applicationContext, R.string.empty_not_saved, Toast.LENGTH_SHORT).show()
+            println("Info: else note")
         }
     }
 

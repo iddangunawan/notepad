@@ -5,9 +5,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import jp.wasabeef.richeditor.RichEditor
@@ -18,7 +20,8 @@ class NewNoteActivity : AppCompatActivity() {
 
     private lateinit var editTitleView: EditText
     private lateinit var richEditorContentView: RichEditor
-    private lateinit var button: Button
+    private lateinit var buttonPrimary: Button
+    private lateinit var buttonSecondary: Button
 
     private var note: Note? = null
     private var contentValue: String? = null
@@ -36,7 +39,8 @@ class NewNoteActivity : AppCompatActivity() {
 
         editTitleView = findViewById(R.id.edit_title)
         richEditorContentView = findViewById(R.id.editor)
-        button = findViewById(R.id.button_save)
+        buttonPrimary = findViewById(R.id.button_primary)
+        buttonSecondary = findViewById(R.id.button_secondary)
 
         richEditorContentView.setEditorHeight(200)
         richEditorContentView.setEditorFontSize(18)
@@ -66,35 +70,59 @@ class NewNoteActivity : AppCompatActivity() {
             richEditorContentView.setBullets()
         }
 
-        button.setOnClickListener {
-            val replyIntent = Intent()
-            if (TextUtils.isEmpty(editTitleView.text) || TextUtils.isEmpty(contentValue)) {
-                setResult(Activity.RESULT_CANCELED, replyIntent)
-            } else {
-                val id = note?.id ?: 0
-                val title = editTitleView.text.toString()
-                val content = contentValue.toString()
-                val calendar = Calendar.getInstance()
-                val currentTime = calendar.time
-                val df = SimpleDateFormat("EEE, dd MMM yyyy\nHH.mm")
-                val formatDate = df.format(currentTime)
+        buttonPrimary.setOnClickListener {
+            when {
+                TextUtils.isEmpty(editTitleView.text) -> {
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.field_cannot_be_blank, "Title"),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    editTitleView.requestFocus()
+                }
+                TextUtils.isEmpty(contentValue) -> {
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.field_cannot_be_blank, "Content"),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    richEditorContentView.requestFocus()
+                }
+                else -> {
+                    val replyIntent = Intent()
+                    val id = note?.id ?: 0
+                    val title = editTitleView.text.toString()
+                    val content = contentValue.toString()
+                    val calendar = Calendar.getInstance()
+                    val currentTime = calendar.time
+                    val df = SimpleDateFormat("EEE, dd MMM yyyy\nHH.mm")
+                    val formatDate = df.format(currentTime)
 
-                replyIntent.putExtra(EXTRA_REPLY_ID, id)
-                replyIntent.putExtra(EXTRA_REPLY_TITLE, title)
-                replyIntent.putExtra(EXTRA_REPLY_CONTENT, content)
-                replyIntent.putExtra(EXTRA_REPLY_UPDATE_AT, formatDate)
-
-                setResult(Activity.RESULT_OK, replyIntent)
+                    note = Note(id, title, content, formatDate)
+                    replyIntent.putExtra(EXTRA_REPLY_NOTE, note)
+                    setResult(Activity.RESULT_OK, replyIntent)
+                    finish()
+                }
             }
-            finish()
         }
 
-        note = intent?.getSerializableExtra("NOTE") as Note?
+        buttonSecondary.visibility = View.GONE
+
+        note = intent?.getSerializableExtra(EXTRA_REPLY_NOTE) as Note?
         if (note != null) {
             supportActionBar?.title = getString(R.string.edit_note)
             editTitleView.setText(note?.title)
             richEditorContentView.html = note?.content
-            button.setText(R.string.btn_update)
+            contentValue = note?.content
+            buttonPrimary.setText(R.string.btn_update)
+            buttonSecondary.visibility = View.VISIBLE
+            buttonSecondary.setOnClickListener {
+                val replyIntent = Intent()
+                replyIntent.putExtra(EXTRA_REPLY_NOTE, note)
+                replyIntent.putExtra(EXTRA_REPLY_ACTION, EXTRA_REPLY_ACTION_DELETE)
+                setResult(Activity.RESULT_OK, replyIntent)
+                finish()
+            }
         }
     }
 
@@ -104,9 +132,8 @@ class NewNoteActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val EXTRA_REPLY_ID = "com.example.android.notelistsql.REPLY.ID"
-        const val EXTRA_REPLY_TITLE = "com.example.android.notelistsql.REPLY.TITLE"
-        const val EXTRA_REPLY_CONTENT = "com.example.android.notelistsql.REPLY.CONTENT"
-        const val EXTRA_REPLY_UPDATE_AT = "com.example.android.notelistsql.REPLY.UPDATE.AT"
+        const val EXTRA_REPLY_NOTE = "EXTRA_REPLY_NOTE"
+        const val EXTRA_REPLY_ACTION = "EXTRA_REPLY_ACTION"
+        const val EXTRA_REPLY_ACTION_DELETE = "EXTRA_REPLY_ACTION_DELETE"
     }
 }

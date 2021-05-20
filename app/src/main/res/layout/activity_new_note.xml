@@ -11,6 +11,8 @@
         android:layout_height="wrap_content"
         android:background="@color/purple_500"
         android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="@string/app_name"
         app:titleTextColor="@color/white" />
 
@@ -33,7 +35,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp">
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -109,12 +113,24 @@
     </androidx.cardview.widget.CardView>
 
     <Button
-        android:id="@+id/button_save"
+        android:id="@+id/button_primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@color/purple_500"
         android:text="@string/btn_save"
         android:textColor="@color/buttonLabel" />
+
+    <Button
+        android:id="@+id/button_secondary"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/btn_delete"
+        android:textColor="@color/red"
+        android:visibility="gone"
+        app:strokeColor="@color/red" />
 
 </LinearLayout>

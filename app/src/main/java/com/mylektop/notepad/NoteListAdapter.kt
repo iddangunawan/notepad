@@ -23,6 +23,10 @@ class NoteListAdapter(private val listener: NoteItemListener) :
         holder.bind(current)
     }
 
+    fun getNoteAt(position: Int): Note {
+        return getItem(position)
+    }
+
     class NoteViewHolder(itemView: View, private val listener: NoteItemListener) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
         private val noteItemViewTitle: TextView = itemView.findViewById(R.id.textViewTitle)
